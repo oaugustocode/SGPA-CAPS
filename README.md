@@ -12,6 +12,7 @@ Além da gestão funcional de acervos, o projeto prioriza a acessibilidade visua
 - **Organização por Caixas Arquivísticas**: Divisão e visualização estruturada dos prontuários em caixas físicas categorizadas por sexo (Masculino e Feminino), limitadas a 20 prontuários por caixa para garantir legibilidade e controle de acervo.
 - **Navegação Paginada e Filtro Alfabético**: Suporte à navegação por páginas e filtragem direta de caixas pela letra inicial do código ou dos prontuários contidos.
 - **Cadastro de Prontuários e Caixas**: Formulário integrado para adição de novos prontuários de pacientes (nome, filiação, sexo, CNS) com opção de associação a uma caixa existente ou criação dinâmica de uma nova caixa física.
+- **Exclusão Segura de Prontuários**: Fluxo de remoção por caixa, com seleção explícita do prontuário e confirmação antes da exclusão permanente.
 - **Acessibilidade Visual (Suporte a Daltonismo)**: Alternância de temas visuais em tempo real adaptados para visão padrão, Protanopia, Deuteranopia e Tritanopia.
 - **Gerador de Massa de Dados (Seed)**: Módulo embutido para população autônoma do banco de dados com até 1.000 registros sintéticos baseados na distribuição estatística de nomes brasileiros.
 
@@ -35,6 +36,7 @@ O sistema adota uma arquitetura modular em camadas, separando responsabilidades 
    - `TelaPrincipal`: Ponto central de interação do usuário, contendo a barra de navegação superior e o motor de busca instantânea.
    - `TelaCaixas`, `TelaCaixasMasc`, `TelaCaixasFem`: Telas responsáveis por listar o acervo de caixas arquivísticas de forma paginada e organizada.
    - `TelaAdicionarPront`: Modal de formulário com validações para inserção de dados de pacientes e gerenciamento de caixas.
+   - `TelaExcluirPront`: Modal de exclusão segura que lista somente os prontuários da caixa selecionada.
    - `TelaAcessbi`: Interface para seleção dos perfis de acessibilidade e ajuste dinâmico das paletas de cor.
    - `TelaAjuda`: Modal com instruções gerais de operação do sistema.
 
@@ -42,7 +44,7 @@ O sistema adota uma arquitetura modular em camadas, separando responsabilidades 
    - `TemaAcessivel`: Classe gerenciadora que centraliza a definição de cores e estilos para a aplicação, permitindo a troca dinâmica de paletas entre as views sem necessidade de reinicialização.
 
 3. **Camada de Dados (`database`)**:
-   - `Banco.py`: Centraliza todas as operações SQL (criação de tabelas, consultas otimizadas com *Window Functions* `ROW_NUMBER()`, paginação e inserções transacionais).
+   - `Banco.py`: Centraliza operações SQL, incluindo consultas parametrizadas, paginação, inserções e exclusões.
    - `Seed.py`: Script de geração de dados sintéticos para simulação de acervo.
 
 ---
@@ -62,6 +64,7 @@ SGPA-CAPS/
 ├── views/
 │   ├── TelaAcessbi.py          # Modal de configuração de acessibilidade
 │   ├── TelaAdicionarPront.py    # Modal de cadastro de novos prontuários
+│   ├── TelaExcluirPront.py     # Modal de exclusão segura de prontuários
 │   ├── TelaAjuda.py            # Modal de ajuda e instruções
 │   ├── TelaCaixas.py           # Componente base de listagem de caixas
 │   ├── TelaCaixasFem.py        # Visão de caixas femininas
@@ -96,7 +99,7 @@ pip install customtkinter ctkfontawesome
 
 1. **Clonar o Repositório**:
    ```bash
-   git clone https://github.com/usuario/SGPA-CAPS.git
+   git clone https://github.com/<seu-usuario>/SGPA-CAPS.git
    cd SGPA-CAPS
    ```
 
