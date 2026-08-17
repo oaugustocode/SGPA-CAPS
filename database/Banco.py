@@ -5,6 +5,7 @@ Para recriar a base de testes com registros fictícios, execute:
 """
 
 from __future__ import annotations
+from contextlib import contextmanager
 from pathlib import Path
 import sqlite3
 
@@ -13,12 +14,20 @@ caminhoBanco = Path(__file__).resolve().parent / "BancoSistemaArquivos.db"
 limiteProntuariosPorCaixa = 20
 
 
+@contextmanager
 def conexao():
-    # Cria a conexão com o banco e garante suporte a chave estrangeira (foreign keys)
+    """Abre uma conexão transacional e garante seu fechamento ao final do uso."""
     con = sqlite3.connect(caminhoBanco)
     con.row_factory = sqlite3.Row
     con.execute("PRAGMA foreign_keys = ON")
-    return con
+    try:
+        yield con
+        con.commit()
+    except Exception:
+        con.rollback()
+        raise
+    finally:
+        con.close()
 
 
 # ─── Consultas ─────────────────────────────────────────────────────────────────
@@ -182,6 +191,27 @@ def listarCaixas(sexo=None):
         ).fetchall()
 
 
+def listarProntuariosPorCaixa(caixaId):
+    """Retorna os prontuários de uma caixa para preenchimento da seleção."""
+    with conexao() as con:
+        return con.execute(
+            """
+            SELECT id, nome_paciente AS nomePaciente, CNS AS cns
+            FROM prontuarios_antigos
+            WHERE caixasId = ?
+            ORDER BY nome_paciente COLLATE NOCASE, id
+            """,
+            (caixaId,),
+        ).fetchall()
+
+
+def excluirProntuario(prontuarioId):
+    """Exclui um prontuário pelo identificador e informa se houve remoção."""
+    with conexao() as con:
+        cursor = con.execute("DELETE FROM prontuarios_antigos WHERE id = ?", (prontuarioId,))
+        return cursor.rowcount > 0
+
+
 def criarCaixa(codigo, sexo):
     """Cria uma nova caixa arquivística no banco e retorna o ID gerado."""
     with conexao() as con:
@@ -204,4 +234,3 @@ def criarProntuario(nomePaciente, nomePai, nomeMae, sexo, cns, caixaId):
             (nomePaciente, nomePai, nomeMae, sexo, cns, caixaId),
         )
         return cursor.lastrowid
-

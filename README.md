@@ -4,6 +4,8 @@ O **SGPA-CAPS** é uma aplicação desktop desenvolvida para a organização, co
 
 Além da gestão funcional de acervos, o projeto prioriza a acessibilidade visual, integrando modos de alto contraste adaptados para diferentes tipos de daltonismo.
 
+> **Privacidade:** todos os nomes, filiações e números de CNS presentes no banco incluído neste repositório são dados sintéticos, gerados exclusivamente para demonstração. O projeto não contém dados reais de pacientes.
+
 ---
 
 ## Funcionalidades Principais
@@ -72,7 +74,9 @@ SGPA-CAPS/
 │   ├── TelaPrincipal.py        # Interface principal e busca de pacientes
 │   └── __init__.py
 ├── .gitignore                  # Regras de exclusão do Git
+├── LICENSE                     # Licença MIT
 ├── main.py                     # Ponto de entrada da aplicação
+├── requirements.txt            # Dependências Python do projeto
 └── README.md                   # Documentação do repositório
 ```
 
@@ -90,7 +94,7 @@ SGPA-CAPS/
 Para instalar as dependências necessárias para a execução da interface gráfica e dos ícones, execute no terminal:
 
 ```bash
-pip install customtkinter ctkfontawesome
+pip install -r requirements.txt
 ```
 
 ---
@@ -99,7 +103,7 @@ pip install customtkinter ctkfontawesome
 
 1. **Clonar o Repositório**:
    ```bash
-   git clone https://github.com/<seu-usuario>/SGPA-CAPS.git
+   git clone https://github.com/oaugustocode/SGPA-CAPS.git
    cd SGPA-CAPS
    ```
 
@@ -120,6 +124,8 @@ python -m database.Seed
 
 Este comando recriará as tabelas e gerará automaticamente 1.000 prontuários fictícios distribuídos entre caixas masculinas e femininas.
 
+> O comando apaga os registros existentes antes de gerar novamente a base de demonstração. Não o execute sobre uma base que contenha dados que devam ser preservados.
+
 ---
 
 ## Recursos de Acessibilidade Visual
@@ -132,3 +138,9 @@ O sistema contempla quatro perfis de cores acessíveis:
 - **Tritanopia**: Otimizada para insensibilidade à luz azul.
 
 A alteração do perfil pode ser realizada a qualquer momento através do ícone de acessibilidade localizado na barra superior da aplicação.
+
+---
+
+## Licença
+
+Distribuído sob a licença MIT. Consulte o arquivo [LICENSE](LICENSE) para mais informações.

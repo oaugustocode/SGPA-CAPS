@@ -1,0 +1,2 @@
+customtkinter==6.0.0
+ctkfontawesome==0.8.0

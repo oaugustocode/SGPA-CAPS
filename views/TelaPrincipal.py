@@ -7,6 +7,7 @@ from views.TelaAjuda import TelaAjuda
 from views.TelaCaixasFem import TelaCaixasFem
 from views.TelaCaixasMasc import TelaCaixasMasc
 from views.TelaAdicionarPront import TelaAdicionarPront
+from views.TelaExcluirPront import TelaExcluirPront
 from components.TemaAcessivel import TemaAcessivel
 
 
@@ -32,6 +33,7 @@ class TelaPrincipal(ctk.CTk):
         self.iconeCaixaMasc = icon_to_ctkimage("box", fill=cor, scale_to_width=22)
         self.iconeCaixaFem = icon_to_ctkimage("box", fill=cor, scale_to_width=22)
         self.iconePlus = icon_to_ctkimage("plus", fill=cor, scale_to_width=20)
+        self.iconeExcluir = icon_to_ctkimage("xmark", fill=cor, scale_to_width=20)
         self.iconeAcessibilidade = icon_to_ctkimage("universal-access", fill=cor, scale_to_width=24)
         self.iconeAjuda = icon_to_ctkimage("circle-info", fill=cor, scale_to_width=24)
         self.iconeLupa = icon_to_ctkimage("magnifying-glass", fill=cor, scale_to_width=20)
@@ -52,6 +54,9 @@ class TelaPrincipal(ctk.CTk):
         ctk.CTkButton(self.barraSuperior, text="Adicionar Prontuário", image=self.iconePlus,
                       compound="left", fg_color="transparent", hover_color=paleta["hover"],
                       command=self.abrirAdicionarProntuario).pack(side="left", padx=10, pady=11)
+        ctk.CTkButton(self.barraSuperior, text="Excluir Prontuário", image=self.iconeExcluir,
+                      compound="left", fg_color="transparent", hover_color=paleta["hover"],
+                      command=self.abrirExcluirProntuario).pack(side="left", padx=10, pady=11)
         ctk.CTkButton(self.barraSuperior, text="", width=40, image=self.iconeAjuda,
                       fg_color="transparent", hover_color=paleta["hover"],
                       command=self.abrirAjuda).pack(side="right", padx=10, pady=16)
@@ -170,6 +175,7 @@ class TelaPrincipal(ctk.CTk):
     def abrirCaixasFem(self): self.abrir(TelaCaixasFem)
     def abrirAcessibilidade(self): self.abrir(TelaAcessbi)
     def abrirAdicionarProntuario(self): self.abrir(TelaAdicionarPront)
+    def abrirExcluirProntuario(self): self.abrir(TelaExcluirPront)
     def abrir(self, tela): tela(master=self)
 
     def aplicarPaleta(self):
@@ -179,4 +185,3 @@ class TelaPrincipal(ctk.CTk):
         self.barraSuperior.configure(fg_color=paleta["barra"])
         self.containerBusca.configure(fg_color=paleta["barra"], border_color=paleta["borda"])
         self.campoPesquisa.configure(text_color=paleta["texto"], placeholder_text_color=paleta["placeholder"])
-
