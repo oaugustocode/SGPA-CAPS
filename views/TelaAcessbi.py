@@ -5,6 +5,15 @@ from components.TemaAcessivel import TemaAcessivel
 class TelaAcessbi(ctk.CTkToplevel):
     # Controla globalmente o fator de ampliação das fontes dos widgets na aplicação
     escalaFonteAtual = 1.0
+    opcoesEscalaFonte = {
+        "80%": 0.8,
+        "90%": 0.9,
+        "100%": 1.0,
+        "110%": 1.1,
+        "120%": 1.2,
+        "130%": 1.3,
+        "140%": 1.4,
+    }
 
     def __init__(self, master=None):
         super().__init__(master=master)
@@ -44,23 +53,24 @@ class TelaAcessbi(ctk.CTkToplevel):
         )
         self.rotuloFonte.pack(pady=(0, 10))
 
-        # Slider para ajuste proporcional da escala dos elementos da interface (de 80% a 140%)
-        self.barraAumentarFonte = ctk.CTkSlider(
+        # Menu para selecionar a escala dos elementos da interface (de 80% a 140%)
+        self.opcoesFonte = ctk.CTkOptionMenu(
             master=self.frameCentral,
-            from_=0.8,
-            to=1.4,
-            number_of_steps=6,
+            values=list(TelaAcessbi.opcoesEscalaFonte),
             width=260,
             command=self.alterarFonte,
         )
-        self.barraAumentarFonte.set(TelaAcessbi.escalaFonteAtual)
-        self.barraAumentarFonte.pack(pady=(0, 8))
+        porcentagemAtual = f"{int(round(TelaAcessbi.escalaFonteAtual * 100))}%"
+        self.opcoesFonte.set(porcentagemAtual)
+        self.opcoesFonte.pack(pady=(0, 8))
 
-        self.valorFonte = ctk.CTkLabel(
+        self.descricaoFonte = ctk.CTkLabel(
             master=self.frameCentral,
-            text=f"{int(TelaAcessbi.escalaFonteAtual * 100)}%",
+            text="Selecione o tamanho mais confortável para leitura.",
+            wraplength=260,
+            justify="center",
         )
-        self.valorFonte.pack()
+        self.descricaoFonte.pack()
 
         self.rotuloCores = ctk.CTkLabel(
             master=self.frameCentral,
@@ -93,16 +103,16 @@ class TelaAcessbi(ctk.CTkToplevel):
         else:
             ctk.set_appearance_mode("dark")
 
-    def alterarFonte(self, valor):
-        # Aplica o fator de escala global aos componentes e exibe a porcentagem atualizada
-        escala = float(valor)
+    def alterarFonte(self, opcao):
+        # Converte a opção percentual e aplica o fator de escala global aos componentes
+        escala = TelaAcessbi.opcoesEscalaFonte[opcao]
         TelaAcessbi.escalaFonteAtual = escala
         ctk.set_widget_scaling(escala)
-        self.valorFonte.configure(text=f"{int(escala * 100)}%")
+        if hasattr(self.master, "ajustarNavegacao"):
+            self.master.ajustarNavegacao(escala)
 
     def alterarPaleta(self, perfil):
         # Seleciona o perfil de cor e propaga a alteração para a janela principal
         TemaAcessivel.selecionar(perfil)
         self.configure(fg_color=TemaAcessivel.obter()["fundo"])
         self.master.aplicarPaleta()
-
