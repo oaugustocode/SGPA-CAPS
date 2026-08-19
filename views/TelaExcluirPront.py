@@ -17,14 +17,18 @@ class TelaExcluirPront(ctk.CTkToplevel):
         self.attributes("-topmost", True)
         self.caixasDisponiveis = []
         self.prontuariosDisponiveis = []
+        self.areaConteudo = ctk.CTkScrollableFrame(
+            self, fg_color="transparent", corner_radius=0,
+        )
+        self.areaConteudo.pack(fill="both", expand=True)
         self.criarLayout()
         self.carregarCaixas()
 
     def criarLayout(self):
         paleta = TemaAcessivel.obter()
-        ctk.CTkLabel(self, text="Excluir Prontuário", font=("Arial", 20, "bold"), text_color=paleta["destaque"]).pack(pady=(28, 5))
-        ctk.CTkLabel(self, text="Selecione a caixa e depois o prontuário que deseja remover.", text_color=paleta["placeholder"]).pack(pady=(0, 18))
-        quadroFormulario = ctk.CTkFrame(self, fg_color=paleta["barra"], border_color=paleta["borda"], border_width=1, corner_radius=10)
+        ctk.CTkLabel(self.areaConteudo, text="Excluir Prontuário", font=("Arial", 20, "bold"), text_color=paleta["destaque"]).pack(pady=(28, 5))
+        ctk.CTkLabel(self.areaConteudo, text="Selecione a caixa e depois o prontuário que deseja remover.", text_color=paleta["placeholder"]).pack(pady=(0, 18))
+        quadroFormulario = ctk.CTkFrame(self.areaConteudo, fg_color=paleta["barra"], border_color=paleta["borda"], border_width=1, corner_radius=10)
         quadroFormulario.pack(fill="x", padx=32, pady=8)
         self.criarRotulo(quadroFormulario, "Caixa *")
         self.opcaoCaixa = ctk.CTkOptionMenu(quadroFormulario, values=["Carregando..."], height=38, fg_color=paleta["hover"], button_color=paleta["destaque"], button_hover_color=paleta["hover"], command=self.aoSelecionarCaixa)
@@ -36,7 +40,8 @@ class TelaExcluirPront(ctk.CTkToplevel):
         self.botaoExcluir.pack(pady=(0, 8))
         self.rotuloStatus = ctk.CTkLabel(quadroFormulario, text="", height=28)
         self.rotuloStatus.pack(pady=(0, 12))
-        ctk.CTkLabel(self, text="A exclusão é permanente. Confira a seleção antes de confirmar.", text_color="#EF4444", font=("Arial", 12)).pack(pady=(12, 0))
+        self.avisoExclusao = ctk.CTkLabel(self.areaConteudo, text="A exclusão é permanente. Confira a seleção antes de confirmar.", text_color="#EF4444", font=("Arial", 12))
+        self.avisoExclusao.pack(pady=(12, 20))
 
     def criarRotulo(self, quadro, texto):
         ctk.CTkLabel(quadro, text=texto, anchor="w", font=("Arial", 13), text_color=TemaAcessivel.obter()["texto"]).pack(fill="x", padx=18, pady=(14, 3))
