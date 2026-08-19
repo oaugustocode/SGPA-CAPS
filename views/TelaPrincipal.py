@@ -43,32 +43,85 @@ class TelaPrincipal(ctk.CTk):
         paleta = TemaAcessivel.obter()
         self.barraSuperior = ctk.CTkFrame(self, height=60, corner_radius=0, fg_color=paleta["barra"])
         self.barraSuperior.pack(side="top", fill="x")
-        self.barraSuperior.pack_propagate(False)
+        self.barraSuperior.grid_propagate(False)
 
-        ctk.CTkButton(self.barraSuperior, text="Caixa Masculina", image=self.iconeCaixaMasc,
-                      compound="left", fg_color="transparent", hover_color=paleta["hover"],
-                      command=self.abrirCaixasMasc).pack(side="left", padx=10, pady=11)
-        ctk.CTkButton(self.barraSuperior, text="Caixa Feminina", image=self.iconeCaixaFem,
-                      compound="left", fg_color="transparent", hover_color=paleta["hover"],
-                      command=self.abrirCaixasFem).pack(side="left", padx=10, pady=11)
-        ctk.CTkButton(self.barraSuperior, text="Adicionar Prontuário", image=self.iconePlus,
-                      compound="left", fg_color="transparent", hover_color=paleta["hover"],
-                      command=self.abrirAdicionarProntuario).pack(side="left", padx=10, pady=11)
-        ctk.CTkButton(self.barraSuperior, text="Excluir Prontuário", image=self.iconeExcluir,
-                      compound="left", fg_color="transparent", hover_color=paleta["hover"],
-                      command=self.abrirExcluirProntuario).pack(side="left", padx=10, pady=11)
-        ctk.CTkButton(self.barraSuperior, text="", width=40, image=self.iconeAjuda,
-                      fg_color="transparent", hover_color=paleta["hover"],
-                      command=self.abrirAjuda).pack(side="right", padx=10, pady=16)
-        ctk.CTkButton(self.barraSuperior, text="", width=40, image=self.iconeAcessibilidade,
-                      fg_color="transparent", hover_color=paleta["hover"],
-                      command=self.abrirAcessibilidade).pack(side="right", padx=5, pady=16)
+        self.botaoCaixaMasc = ctk.CTkButton(
+            self.barraSuperior, text="Caixa Masculina", image=self.iconeCaixaMasc,
+            compound="left", fg_color="transparent", hover_color=paleta["hover"],
+            command=self.abrirCaixasMasc,
+        )
+        self.botaoCaixaFem = ctk.CTkButton(
+            self.barraSuperior, text="Caixa Feminina", image=self.iconeCaixaFem,
+            compound="left", fg_color="transparent", hover_color=paleta["hover"],
+            command=self.abrirCaixasFem,
+        )
+        self.botaoAdicionar = ctk.CTkButton(
+            self.barraSuperior, text="Adicionar Prontuário", image=self.iconePlus,
+            compound="left", fg_color="transparent", hover_color=paleta["hover"],
+            command=self.abrirAdicionarProntuario,
+        )
+        self.botaoExcluir = ctk.CTkButton(
+            self.barraSuperior, text="Excluir Prontuário", image=self.iconeExcluir,
+            compound="left", fg_color="transparent", hover_color=paleta["hover"],
+            command=self.abrirExcluirProntuario,
+        )
+        self.botaoAcessibilidade = ctk.CTkButton(
+            self.barraSuperior, text="", width=40, image=self.iconeAcessibilidade,
+            fg_color="transparent", hover_color=paleta["hover"],
+            command=self.abrirAcessibilidade,
+        )
+        self.botaoAjuda = ctk.CTkButton(
+            self.barraSuperior, text="", width=40, image=self.iconeAjuda,
+            fg_color="transparent", hover_color=paleta["hover"],
+            command=self.abrirAjuda,
+        )
+        self.botoesNavegacao = (
+            self.botaoCaixaMasc,
+            self.botaoCaixaFem,
+            self.botaoAdicionar,
+            self.botaoExcluir,
+            self.botaoAcessibilidade,
+            self.botaoAjuda,
+        )
+        self.ajustarNavegacao(TelaAcessbi.escalaFonteAtual)
+
+    def ajustarNavegacao(self, escala):
+        """Reorganiza a barra para manter todas as ações visíveis em fontes maiores."""
+        for botao in self.botoesNavegacao:
+            botao.grid_forget()
+        for coluna in range(7):
+            self.barraSuperior.grid_columnconfigure(coluna, weight=0)
+
+        if escala >= 1.2:
+            self.barraSuperior.configure(height=112)
+            self.barraSuperior.grid_columnconfigure(2, weight=1)
+            self.botaoCaixaMasc.grid(row=0, column=0, sticky="w", padx=(8, 4), pady=(8, 4))
+            self.botaoCaixaFem.grid(row=0, column=1, sticky="w", padx=4, pady=(8, 4))
+            self.botaoAdicionar.grid(row=1, column=0, sticky="w", padx=(8, 4), pady=(4, 8))
+            self.botaoExcluir.grid(row=1, column=1, sticky="w", padx=4, pady=(4, 8))
+            self.botaoAcessibilidade.grid(row=0, column=3, sticky="e", padx=8, pady=(8, 4))
+            self.botaoAjuda.grid(row=1, column=3, sticky="e", padx=8, pady=(4, 8))
+            return
+
+        self.barraSuperior.configure(height=60)
+        self.barraSuperior.grid_columnconfigure(4, weight=1)
+        self.botaoCaixaMasc.grid(row=0, column=0, sticky="w", padx=(8, 4), pady=11)
+        self.botaoCaixaFem.grid(row=0, column=1, sticky="w", padx=4, pady=11)
+        self.botaoAdicionar.grid(row=0, column=2, sticky="w", padx=4, pady=11)
+        self.botaoExcluir.grid(row=0, column=3, sticky="w", padx=4, pady=11)
+        self.botaoAcessibilidade.grid(row=0, column=5, sticky="e", padx=4, pady=11)
+        self.botaoAjuda.grid(row=0, column=6, sticky="e", padx=(4, 8), pady=11)
 
     def criarAreaPesquisa(self):
-        # Inicializa o container central com entrada de texto e lista flutuante de sugestões
+        # Mantém a pesquisa em uma área própria abaixo da navegação, com rolagem quando necessário
         paleta = TemaAcessivel.obter()
-        self.frameCentral = ctk.CTkFrame(self, fg_color="transparent")
-        self.frameCentral.place(relx=.5, rely=.45, anchor="center")
+        self.areaConteudo = ctk.CTkScrollableFrame(
+            self, fg_color="transparent", corner_radius=0,
+        )
+        self.areaConteudo.pack(fill="both", expand=True)
+
+        self.frameCentral = ctk.CTkFrame(self.areaConteudo, fg_color="transparent")
+        self.frameCentral.pack(padx=20, pady=(35, 25))
 
         self.containerBusca = ctk.CTkFrame(self.frameCentral, fg_color=paleta["barra"],
                                            border_color=paleta["borda"], border_width=1, corner_radius=8)
@@ -183,5 +236,6 @@ class TelaPrincipal(ctk.CTk):
         paleta = TemaAcessivel.obter()
         self.configure(fg_color=paleta["fundo"])
         self.barraSuperior.configure(fg_color=paleta["barra"])
+        self.areaConteudo.configure(fg_color="transparent")
         self.containerBusca.configure(fg_color=paleta["barra"], border_color=paleta["borda"])
         self.campoPesquisa.configure(text_color=paleta["texto"], placeholder_text_color=paleta["placeholder"])
