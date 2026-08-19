@@ -7,12 +7,16 @@ class TelaAdicionarPront(ctk.CTkToplevel):
     def __init__(self, master=None):
         super().__init__(master=master)
         self.title("Adicionar Prontuário")
-        self.geometry("900x680")
+        self.geometry("900x800")
         self.minsize(720, 580)
         self.configure(fg_color=TemaAcessivel.obter()["fundo"])
         self.attributes("-topmost", True)
 
         self.cacheCaixas = []
+        self.areaConteudo = ctk.CTkScrollableFrame(
+            self, fg_color="transparent", corner_radius=0,
+        )
+        self.areaConteudo.pack(fill="both", expand=True)
         self.criarLayoutFormulario()
 
     # ─── Layout principal ──────────────────────────────────────────────────
@@ -22,21 +26,22 @@ class TelaAdicionarPront(ctk.CTkToplevel):
 
         # Título da janela modal
         ctk.CTkLabel(
-            self, text="Adicionar Prontuário",
+            self.areaConteudo, text="Adicionar Prontuário",
             font=("Arial", 20, "bold"),
             text_color=("#001D3D", "#FFFFFF"),
         ).pack(pady=(20, 4))
 
         ctk.CTkLabel(
-            self, text="Preencha os dados abaixo para cadastrar um novo prontuário.",
+            self.areaConteudo, text="Preencha os dados abaixo para cadastrar um novo prontuário.",
             text_color=paleta["placeholder"],
         ).pack(pady=(0, 16))
 
         # ── Seção: Formulário de cadastro do paciente ────────────────────────
-        frameFormulario = ctk.CTkFrame(self, fg_color=paleta["barra"],
-                                        border_color=paleta["borda"], border_width=1,
-                                        corner_radius=10)
-        frameFormulario.pack(fill="x", padx=30, pady=(0, 10))
+        self.frameFormulario = ctk.CTkFrame(self.areaConteudo, fg_color=paleta["barra"],
+                                             border_color=paleta["borda"], border_width=1,
+                                             corner_radius=10)
+        self.frameFormulario.pack(fill="x", padx=30, pady=(0, 10))
+        frameFormulario = self.frameFormulario
 
         # Nome do Paciente (campo obrigatório em linha inteira)
         self._criarRotulo(frameFormulario, "Nome do Paciente *")
@@ -119,14 +124,15 @@ class TelaAdicionarPront(ctk.CTkToplevel):
         self.rotuloStatus.pack(pady=(0, 10))
 
         # ── Separador ─────────────────────────────────────────────────────
-        ctk.CTkFrame(self, height=2, fg_color=paleta["borda"]).pack(
+        ctk.CTkFrame(self.areaConteudo, height=2, fg_color=paleta["borda"]).pack(
             fill="x", padx=30, pady=(6, 10))
 
         # ── Seção: Cadastro rápido de nova caixa ───────────────────────────
-        frameCaixa = ctk.CTkFrame(self, fg_color=paleta["barra"],
-                                   border_color=paleta["borda"], border_width=1,
-                                   corner_radius=10)
-        frameCaixa.pack(fill="x", padx=30, pady=(0, 20))
+        self.frameCaixa = ctk.CTkFrame(self.areaConteudo, fg_color=paleta["barra"],
+                                       border_color=paleta["borda"], border_width=1,
+                                       corner_radius=10)
+        self.frameCaixa.pack(fill="x", padx=30, pady=(0, 20))
+        frameCaixa = self.frameCaixa
 
         ctk.CTkLabel(frameCaixa, text="Criar Nova Caixa",
                       font=("Arial", 16, "bold"),
