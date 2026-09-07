@@ -1,2 +1,4 @@
 customtkinter==6.0.0
 ctkfontawesome==0.8.0
+matplotlib>=3.8.0
+reportlab>=4.0.0

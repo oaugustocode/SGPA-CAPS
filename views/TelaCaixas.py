@@ -26,18 +26,25 @@ class TelaCaixas(ctk.CTkToplevel):
         self.title(titulo)
         self.geometry("1040x680")
         self.minsize(760, 520)
-        self.configure(fg_color=TemaAcessivel.obter()["fundo"])
+
+        # Garante que a janela abra na frente da janela principal e receba foco imediato
+        self.attributes("-topmost", True)
+        self.lift()
+        self.focus_force()
 
         paleta = TemaAcessivel.obter()
-        corTextoPagina = ("#001D3D", "#FFFFFF")
-        ctk.CTkLabel(
-            self, text=titulo, font=("Arial", 20, "bold"), text_color=corTextoPagina
-        ).pack(pady=(20, 4))
-        ctk.CTkLabel(
+        self.configure(fg_color=paleta["fundo"])
+
+        self.rotuloTitulo = ctk.CTkLabel(
+            self, text=titulo, font=("Arial", 20, "bold"), text_color=paleta["texto"]
+        )
+        self.rotuloTitulo.pack(pady=(20, 4))
+        self.rotuloSubtitulo = ctk.CTkLabel(
             self,
             text="Consulte os prontuarios organizados por caixa.",
             text_color=paleta["placeholder"],
-        ).pack(pady=(0, 12))
+        )
+        self.rotuloSubtitulo.pack(pady=(0, 12))
 
         self.criarMenuAlfabeto()
         self.areaCaixas = ctk.CTkScrollableFrame(self, fg_color="transparent")
@@ -47,6 +54,29 @@ class TelaCaixas(ctk.CTkToplevel):
 
         self.atualizarContagem()
         self.carregarPagina()
+
+        # Inscreve a janela para atualizar dinamicamente quando a paleta for alterada
+        TemaAcessivel.registrarObservador(self.aplicarPaleta)
+        self.protocol("WM_DELETE_WINDOW", self.aoFechar)
+
+    def aoFechar(self):
+        TemaAcessivel.removerObservador(self.aplicarPaleta)
+        self.destroy()
+
+    def aplicarPaleta(self):
+        # Atualiza em tempo real as cores da tela de caixas
+        paleta = TemaAcessivel.obter()
+        self.configure(fg_color=paleta["fundo"])
+        if hasattr(self, "rotuloTitulo"):
+            self.rotuloTitulo.configure(text_color=paleta["texto"])
+        if hasattr(self, "rotuloSubtitulo"):
+            self.rotuloSubtitulo.configure(text_color=paleta["placeholder"])
+        self.atualizarDestaqueLetra()
+        if not self.carregando:
+            self.offset = 0
+            self.limparAreaCaixas()
+            self.atualizarContagem()
+            self.carregarPagina()
 
     def criarMenuAlfabeto(self):
         # Monta a barra de atalhos A-Z rolável horizontalmente para filtragem rápida por letra
@@ -58,6 +88,7 @@ class TelaCaixas(ctk.CTkToplevel):
         botaoTodas = ctk.CTkButton(
             frame, text="Todas", width=64, height=32,
             fg_color=paleta["destaque"], hover_color=paleta["hover"],
+            text_color=paleta["texto_destaque"],
             command=lambda: self.filtrarPorLetra(None),
         )
         botaoTodas.pack(side="left", padx=(0, 5))
@@ -67,6 +98,7 @@ class TelaCaixas(ctk.CTkToplevel):
             botao = ctk.CTkButton(
                 frame, text=letra, width=36, height=32,
                 fg_color=paleta["barra"], hover_color=paleta["hover"],
+                text_color=paleta["texto_barra"],
                 command=lambda letraAtual=letra: self.filtrarPorLetra(letraAtual),
             )
             botao.pack(side="left", padx=2)
@@ -77,9 +109,9 @@ class TelaCaixas(ctk.CTkToplevel):
         paleta = TemaAcessivel.obter()
         for chave, botao in self.botoesLetra.items():
             if chave == self.letraAtual:
-                botao.configure(fg_color=paleta["destaque"])
+                botao.configure(fg_color=paleta["destaque"], text_color=paleta["texto_destaque"])
             else:
-                botao.configure(fg_color=paleta["barra"])
+                botao.configure(fg_color=paleta["barra"], text_color=paleta["texto_barra"])
 
     def filtrarPorLetra(self, letra):
         # Evita execuções simultâneas se já houver uma página sendo carregada
@@ -111,12 +143,13 @@ class TelaCaixas(ctk.CTkToplevel):
             self.frameBotaoMais.destroy()
             self.frameBotaoMais = None
 
+        paleta = TemaAcessivel.obter()
         if self.offset == 0 and self.totalCaixas == 0:
             descricao = "para a letra selecionada" if self.letraAtual else "cadastrada"
             ctk.CTkLabel(
                 self.areaCaixas,
                 text=f"Nenhuma caixa {self.sexo.lower()} {descricao}.",
-                text_color=("#001D3D", "#FFFFFF"),
+                text_color=paleta["texto"],
             ).pack(pady=20)
             self.carregando = False
             return
@@ -174,6 +207,7 @@ class TelaCaixas(ctk.CTkToplevel):
             text=f"Carregar mais ({restantes} restantes)",
             fg_color=paleta["destaque"],
             hover_color=paleta["hover"],
+            text_color=paleta["texto_destaque"],
             height=36,
             command=self.carregarPagina,
         ).pack(pady=5)
@@ -182,7 +216,7 @@ class TelaCaixas(ctk.CTkToplevel):
         # Renderiza a caixa arquivística no formato de card de grade (2 colunas)
         paleta = TemaAcessivel.obter()
         cartao = ctk.CTkFrame(
-            self.areaCaixas, fg_color=paleta["barra"], border_color=paleta["borda"],
+            self.areaCaixas, fg_color=paleta["card"], border_color=paleta["borda"],
             border_width=1, corner_radius=10,
         )
         cartao.grid(row=indice // 2, column=indice % 2, sticky="new", padx=7, pady=7)
@@ -208,7 +242,7 @@ class TelaCaixas(ctk.CTkToplevel):
     def criarProntuario(self, master, prontuario):
         # Exibe os dados reduzidos de um paciente dentro do card da caixa
         paleta = TemaAcessivel.obter()
-        bloco = ctk.CTkFrame(master, fg_color=paleta["hover"], corner_radius=7)
+        bloco = ctk.CTkFrame(master, fg_color=paleta["card_item"], corner_radius=7)
         bloco.pack(fill="x", padx=12, pady=(0, 9))
         ctk.CTkLabel(
             bloco, text=prontuario["nomePaciente"], font=("Arial", 14, "bold"),
@@ -219,9 +253,10 @@ class TelaCaixas(ctk.CTkToplevel):
         self.criarLinha(bloco, "CNS", prontuario["cns"])
 
     def criarLinha(self, master, rotulo, valor):
+        paleta = TemaAcessivel.obter()
         texto = valor if valor else "Nao informado"
         ctk.CTkLabel(
-            master, text=f"{rotulo}: {texto}", text_color=TemaAcessivel.obter()["texto"],
+            master, text=f"{rotulo}: {texto}", text_color=paleta["texto"],
             anchor="w", wraplength=430,
         ).pack(fill="x", padx=10, pady=1)
 

@@ -39,3 +39,9 @@ dist/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Benchmark e Relatórios
+benchmark/
+*.pdf
+Relatorio_Benchmark_Banco_SGPA_CAPS.pd
+RELATORIO_MUDANCAS.md

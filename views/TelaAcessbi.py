@@ -96,12 +96,45 @@ class TelaAcessbi(ctk.CTkToplevel):
         )
         self.descricaoPaleta.pack()
 
+        # Inscreve a janela de acessibilidade para atualizar dinamicamente com o tema
+        TemaAcessivel.registrarObservador(self.aplicarPaleta)
+        self.protocol("WM_DELETE_WINDOW", self.aoFechar)
+        self.aplicarPaleta()
+
+    def aoFechar(self):
+        TemaAcessivel.removerObservador(self.aplicarPaleta)
+        self.destroy()
+
+    def aplicarPaleta(self):
+        paleta = TemaAcessivel.obter()
+        self.configure(fg_color=paleta["fundo"])
+        self.rotuloTitulo.configure(text_color=paleta["texto"])
+        self.checkModoClaro.configure(text_color=paleta["texto"])
+        self.rotuloFonte.configure(text_color=paleta["texto"])
+        self.opcoesFonte.configure(
+            fg_color=paleta["destaque"],
+            button_color=paleta["hover"],
+            button_hover_color=paleta["hover"],
+            text_color=paleta["texto_destaque"],
+        )
+        self.descricaoFonte.configure(text_color=paleta["placeholder"])
+        self.rotuloCores.configure(text_color=paleta["texto"])
+        self.opcoesDaltonismo.configure(
+            fg_color=paleta["destaque"],
+            button_color=paleta["hover"],
+            button_hover_color=paleta["hover"],
+            text_color=paleta["texto_destaque"],
+        )
+        self.descricaoPaleta.configure(text_color=paleta["placeholder"])
+
     def alternarTema(self):
         # Alterna dinamicamente entre tema claro e escuro no motor do CustomTkinter
         if self.varModoClaro.get() == 1:
             ctk.set_appearance_mode("light")
         else:
             ctk.set_appearance_mode("dark")
+        # Força atualização dos ícones e elementos para adequação de luminância
+        TemaAcessivel.notificarObservadores()
 
     def alterarFonte(self, opcao):
         # Converte a opção percentual e aplica o fator de escala global aos componentes
@@ -112,7 +145,5 @@ class TelaAcessbi(ctk.CTkToplevel):
             self.master.ajustarNavegacao(escala)
 
     def alterarPaleta(self, perfil):
-        # Seleciona o perfil de cor e propaga a alteração para a janela principal
+        # Seleciona o perfil de cor e propaga a alteração para todas as janelas do sistema
         TemaAcessivel.selecionar(perfil)
-        self.configure(fg_color=TemaAcessivel.obter()["fundo"])
-        self.master.aplicarPaleta()
