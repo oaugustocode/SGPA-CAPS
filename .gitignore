@@ -43,5 +43,10 @@ Desktop.ini
 # Benchmark e Relatórios
 benchmark/
 *.pdf
+Relatorio_Benchmark_Banco_SGPA_CAPS.pdf
 Relatorio_Benchmark_Banco_SGPA_CAPS.pd
 RELATORIO_MUDANCAS.md
+
+# Figma Plugin
+figma-plugin/
+*figma-plugin*
