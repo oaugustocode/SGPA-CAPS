@@ -11,8 +11,8 @@ class TelaCaixas(ctk.CTkToplevel):
     # Quantidade de caixas renderizadas por página
     caixasPorPagina = 6
 
-    def __init__(self, master, sexo, titulo):
-        super().__init__(master=master)
+    def __init__(self, master, sexo, titulo, **kwargs):
+        super().__init__(master=master, **kwargs)
         self.sexo = sexo
         self.titulo = titulo
 
@@ -250,6 +250,8 @@ class TelaCaixas(ctk.CTkToplevel):
         ).pack(fill="x", padx=10, pady=(8, 4))
         self.criarLinha(bloco, "Pai", prontuario["nomePai"])
         self.criarLinha(bloco, "Mae", prontuario["nomeMae"])
+        dataNasc = prontuario["dataNascimento"] if "dataNascimento" in prontuario.keys() and prontuario["dataNascimento"] else "Não informada"
+        self.criarLinha(bloco, "Data de Nascimento", dataNasc)
         self.criarLinha(bloco, "CNS", prontuario["cns"])
 
     def criarLinha(self, master, rotulo, valor):

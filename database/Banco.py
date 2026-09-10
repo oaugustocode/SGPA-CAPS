@@ -14,12 +14,30 @@ caminhoBanco = Path(__file__).resolve().parent / "BancoSistemaArquivos.db"
 limiteProntuariosPorCaixa = 20
 
 
+def _garantirTabelaLogs(con: sqlite3.Connection) -> None:
+    """Cria a tabela de log de ações caso ainda não exista (migração não destrutiva)."""
+    con.execute(
+        """
+        CREATE TABLE IF NOT EXISTS log_acoes (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            tipo        TEXT    NOT NULL CHECK (tipo IN ('REABERTO', 'ARQUIVADO')),
+            nomePaciente    TEXT NOT NULL,
+            dataNascimento  TEXT,
+            caixaCodigo     TEXT,
+            caixaSexo       TEXT,
+            dataHora        TEXT NOT NULL
+        )
+        """
+    )
+
+
 @contextmanager
 def conexao():
     """Abre uma conexão transacional e garante seu fechamento ao final do uso."""
     con = sqlite3.connect(caminhoBanco)
     con.row_factory = sqlite3.Row
     con.execute("PRAGMA foreign_keys = ON")
+    _garantirTabelaLogs(con)
     try:
         yield con
         con.commit()
@@ -28,6 +46,7 @@ def conexao():
         raise
     finally:
         con.close()
+
 
 
 # ─── Consultas ─────────────────────────────────────────────────────────────────
@@ -46,6 +65,7 @@ def buscarProntuariosPorNomeOuCNS(termo, limite=8):
             SELECT
                 p.id,
                 p.nome_paciente AS nomePaciente,
+                p.data_nascimento AS dataNascimento,
                 p.CNS AS cns,
                 c.codigo AS caixaCodigo,
                 c.sexo AS caixaSexo
@@ -75,6 +95,7 @@ def buscarProntuario(prontuarioId):
                 p.nome_paciente AS nomePaciente,
                 p.nome_pai AS nomePai,
                 p.nome_mae AS nomeMae,
+                p.data_nascimento AS dataNascimento,
                 p.sexo AS sexo,
                 p.CNS AS cns,
                 c.codigo AS caixaCodigo,
@@ -136,6 +157,7 @@ def buscarCaixasComProntuariosPaginado(sexo, letra=None, limite=6, offset=0):
                     p.nome_paciente AS nomePaciente,
                     p.nome_pai AS nomePai,
                     p.nome_mae AS nomeMae,
+                    p.data_nascimento AS dataNascimento,
                     p.sexo AS sexo,
                     p.CNS AS cns,
                     ROW_NUMBER() OVER (
@@ -151,6 +173,7 @@ def buscarCaixasComProntuariosPaginado(sexo, letra=None, limite=6, offset=0):
                 nomePaciente,
                 nomePai,
                 nomeMae,
+                dataNascimento,
                 sexo,
                 cns
             FROM prontuarios_limitados
@@ -196,7 +219,7 @@ def listarProntuariosPorCaixa(caixaId):
     with conexao() as con:
         return con.execute(
             """
-            SELECT id, nome_paciente AS nomePaciente, CNS AS cns
+            SELECT id, nome_paciente AS nomePaciente, data_nascimento AS dataNascimento, CNS AS cns
             FROM prontuarios_antigos
             WHERE caixasId = ?
             ORDER BY nome_paciente COLLATE NOCASE, id
@@ -222,15 +245,52 @@ def criarCaixa(codigo, sexo):
         return cursor.lastrowid
 
 
-def criarProntuario(nomePaciente, nomePai, nomeMae, sexo, cns, caixaId):
+def criarProntuario(nomePaciente, nomePai, nomeMae, dataNascimento, sexo, cns, caixaId):
     """Cadastra um novo prontuário associado a uma caixa e retorna o ID gerado."""
     with conexao() as con:
         cursor = con.execute(
             """
             INSERT INTO prontuarios_antigos (
-                nome_paciente, nome_pai, nome_mae, sexo, CNS, caixasId
-            ) VALUES (?, ?, ?, ?, ?, ?)
+                nome_paciente, nome_pai, nome_mae, data_nascimento, sexo, CNS, caixasId
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            (nomePaciente, nomePai, nomeMae, sexo, cns, caixaId),
+            (nomePaciente, nomePai, nomeMae, dataNascimento, sexo, cns, caixaId),
         )
         return cursor.lastrowid
+
+
+# ─── Auditoria / Logs ──────────────────────────────────────────────────────────
+
+
+def registrarLog(tipo, nomePaciente, dataNascimento, caixaCodigo, caixaSexo, dataHora):
+    """Registra uma ação de auditoria (REABERTO ou ARQUIVADO) na tabela de logs."""
+    with conexao() as con:
+        con.execute(
+            """
+            INSERT INTO log_acoes (tipo, nomePaciente, dataNascimento, caixaCodigo, caixaSexo, dataHora)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (tipo, nomePaciente, dataNascimento, caixaCodigo, caixaSexo, dataHora),
+        )
+
+
+def buscarLogs(tipo=None):
+    """Retorna todos os registros de log, opcionalmente filtrados por tipo (REABERTO ou ARQUIVADO)."""
+    with conexao() as con:
+        if tipo:
+            return con.execute(
+                """
+                SELECT id, tipo, nomePaciente, dataNascimento, caixaCodigo, caixaSexo, dataHora
+                FROM log_acoes
+                WHERE tipo = ?
+                ORDER BY id DESC
+                """,
+                (tipo,),
+            ).fetchall()
+        return con.execute(
+            """
+            SELECT id, tipo, nomePaciente, dataNascimento, caixaCodigo, caixaSexo, dataHora
+            FROM log_acoes
+            ORDER BY id DESC
+            """
+        ).fetchall()

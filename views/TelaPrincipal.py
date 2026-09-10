@@ -6,8 +6,8 @@ from views.TelaAcessbi import TelaAcessbi
 from views.TelaAjuda import TelaAjuda
 from views.TelaCaixasFem import TelaCaixasFem
 from views.TelaCaixasMasc import TelaCaixasMasc
-from views.TelaAdicionarPront import TelaAdicionarPront
-from views.TelaExcluirPront import TelaExcluirPront
+from views.TelaArquivarPront import TelaArquivarPront
+from views.TelaReabrirPront import TelaReabrirPront
 from components.TemaAcessivel import TemaAcessivel
 
 
@@ -60,14 +60,14 @@ class TelaPrincipal(ctk.CTk):
             text_color=paleta["texto_barra"], command=self.abrirCaixasFem,
         )
         self.botaoAdicionar = ctk.CTkButton(
-            self.barraSuperior, text="Adicionar Prontuário", image=self.iconePlus,
+            self.barraSuperior, text="Arquivar Prontuário", image=self.iconePlus,
             compound="left", fg_color="transparent", hover_color=paleta["hover"],
-            text_color=paleta["texto_barra"], command=self.abrirAdicionarProntuario,
+            text_color=paleta["texto_barra"], command=self.abrirArquivarProntuario,
         )
         self.botaoExcluir = ctk.CTkButton(
-            self.barraSuperior, text="Excluir Prontuário", image=self.iconeExcluir,
+            self.barraSuperior, text="Reabrir Prontuário", image=self.iconeExcluir,
             compound="left", fg_color="transparent", hover_color=paleta["hover"],
-            text_color=paleta["texto_barra"], command=self.abrirExcluirProntuario,
+            text_color=paleta["texto_barra"], command=self.abrirReabrirProntuario,
         )
         self.botaoAcessibilidade = ctk.CTkButton(
             self.barraSuperior, text="", width=40, image=self.iconeAcessibilidade,
@@ -170,7 +170,7 @@ class TelaPrincipal(ctk.CTk):
             return
         paleta = TemaAcessivel.obter()
         for prontuario in self.sugestoes:
-            textoBotao = f'{prontuario["nomePaciente"]} | CNS {prontuario["cns"]}'
+            textoBotao = f'{prontuario["nomePaciente"]} | Nasc: {prontuario["dataNascimento"]} | CNS {prontuario["cns"]}'
             ctk.CTkButton(
                 self.listaSugestoes, text=textoBotao, anchor="w",
                 height=32, fg_color="transparent", hover_color=paleta["hover"],
@@ -209,9 +209,12 @@ class TelaPrincipal(ctk.CTk):
         self.campo(cartao, "Nome completo do paciente", prontuario["nomePaciente"], 0, 0, 3)
         self.campo(cartao, "Nome do pai", prontuario["nomePai"] or "Não informado", 1, 0)
         self.campo(cartao, "Nome da mãe", prontuario["nomeMae"] or "Não informado", 1, 1)
-        self.campo(cartao, "CNS", str(prontuario["cns"]), 2, 0)
+        self.campo(cartao, "Data de Nascimento", prontuario["dataNascimento"] or "Não informada", 2, 0)
+        sexoFormatado = "Masculino" if prontuario["sexo"] == "M" else "Feminino" if prontuario["sexo"] == "F" else (prontuario["sexo"] or "Não informado")
+        self.campo(cartao, "Sexo", sexoFormatado, 2, 1)
+        self.campo(cartao, "CNS", str(prontuario["cns"]), 3, 0)
         caixa = f'{prontuario["caixaSexo"] or "Sem sexo"} • {prontuario["caixaCodigo"] or "Sem caixa"}'
-        self.campo(cartao, "Caixa", caixa, 2, 1)
+        self.campo(cartao, "Caixa", caixa, 3, 1)
 
     def campo(self, master, rotulo, valor, linha, coluna, colspan=1):
         # Componente reutilizável para exibir cada rótulo e valor formatado no card
@@ -250,8 +253,8 @@ class TelaPrincipal(ctk.CTk):
     def abrirCaixasMasc(self): return self.abrir(TelaCaixasMasc)
     def abrirCaixasFem(self): return self.abrir(TelaCaixasFem)
     def abrirAcessibilidade(self): return self.abrir(TelaAcessbi)
-    def abrirAdicionarProntuario(self): return self.abrir(TelaAdicionarPront)
-    def abrirExcluirProntuario(self): return self.abrir(TelaExcluirPront)
+    def abrirArquivarProntuario(self): return self.abrir(TelaArquivarPront)
+    def abrirReabrirProntuario(self): return self.abrir(TelaReabrirPront)
 
     def abrir(self, tela):
         janela = tela(master=self)

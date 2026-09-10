@@ -5,8 +5,8 @@ from components.TemaAcessivel import TemaAcessivel
 class TelaAjuda(ctk.CTkToplevel):
     """Janela modal com orientações objetivas sobre os fluxos do sistema."""
 
-    def __init__(self, *args, corFundo=None, **kwargs):
-        super().__init__(*args, fg_color=corFundo, **kwargs)
+    def __init__(self, master=None, **kwargs):
+        super().__init__(master=master, **kwargs)
         self.title("Central de Ajuda")
         self.geometry("850x600")
         self.minsize(680, 500)
@@ -23,8 +23,8 @@ class TelaAjuda(ctk.CTkToplevel):
         instrucoes = [
             ("1. Buscar um prontuário", "Na tela inicial, digite ao menos duas letras do nome ou parte do CNS. Escolha um resultado ou pressione Enter para abrir o primeiro."),
             ("2. Consultar caixas", "Use Caixa Masculina ou Caixa Feminina para navegar pelas caixas. Os botões de A a Z filtram os códigos e Carregar mais exibe os próximos resultados."),
-            ("3. Adicionar prontuário", "Abra Adicionar Prontuário, preencha nome, CNS de 15 dígitos, sexo e caixa. Caso necessário, crie uma nova caixa na parte inferior da mesma tela."),
-            ("4. Excluir prontuário", "Abra Excluir Prontuário na barra superior. Selecione a caixa, escolha o prontuário e confirme a exclusão. Essa ação é permanente."),
+            ("3. Arquivar prontuário", "Abra Arquivar Prontuário, preencha nome, data de nascimento (até 17 anos e 11 meses), CNS de 5 dígitos, sexo e caixa. Caso necessário, crie uma nova caixa na parte inferior da mesma tela. O código da caixa deve começar com uma letra (A-Z) seguida de número(s), ex: A1, B2, A 1."),
+            ("4. Reabrir prontuário", "Abra Reabrir Prontuário na barra superior. Selecione a caixa, escolha o prontuário e confirme. O prontuário será retirado do arquivo e o evento ficará registrado no histórico. Essa ação não pode ser desfeita."),
             ("5. Acessibilidade", "Use o ícone de acessibilidade no topo para ajustar a visualização conforme sua necessidade."),
         ]
         for titulo, descricao in instrucoes:

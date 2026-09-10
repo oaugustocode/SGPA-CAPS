@@ -6,7 +6,15 @@ Para recriar o banco de teste com 1.000 prontuários, execute:
 
 from __future__ import annotations
 from collections import defaultdict
+import datetime
+from pathlib import Path
 import random
+import sys
+
+# Garante que a pasta raiz do projeto esteja no sys.path para execução direta
+caminhoRaiz = str(Path(__file__).resolve().parent.parent)
+if caminhoRaiz not in sys.path:
+    sys.path.insert(0, caminhoRaiz)
 
 from database.Banco import conexao
 
@@ -101,12 +109,21 @@ def _gerarNomeFamiliar(gruposPrimeiroNome):
 
 
 def _gerarCnsUnico(usados):
-    # Gera um CNS fictício único com exatamente 15 dígitos
+    # Gera um CNS fictício único com exatamente 5 dígitos
     while True:
-        cns = f"{gerador.randint(100000000000000, 999999999999999)}"
+        cns = f"{gerador.randint(10000, 99999):05d}"
         if cns not in usados:
             usados.add(cns)
             return cns
+
+
+def _gerarDataNascimento():
+    # Gera datas para crianças e adolescentes de 0 a 17 anos e 11 meses (estritamente < 18 anos)
+    hoje = datetime.date.today()
+    # Idade em dias entre 15 dias e 17 anos + 330 dias
+    dias = gerador.randint(15, 17 * 365 + 330)
+    nascimento = hoje - datetime.timedelta(days=dias)
+    return nascimento.strftime("%d/%m/%Y")
 
 
 def _quantidadeCaixasPorLetra(total):
@@ -142,6 +159,7 @@ def _gerarProntuarios(sexo, total):
                 "nomePaciente": nomePaciente,
                 "nomePai": nomePai,
                 "nomeMae": nomeMae,
+                "dataNascimento": _gerarDataNascimento(),
                 "cns": _gerarCnsUnico(usadosCns),
                 "letra": letra,
             }
@@ -174,6 +192,7 @@ def _distribuirCaixas(registros, rotuloSexo):
                     "nomePaciente": registro["nomePaciente"],
                     "nomePai": registro["nomePai"],
                     "nomeMae": registro["nomeMae"],
+                    "dataNascimento": registro["dataNascimento"],
                     "sexo": registro["sexo"],
                     "cns": registro["cns"],
                     "caixaCodigo": codigo,
@@ -203,14 +222,18 @@ def _criarEsquema(con):
             nome_paciente TEXT NOT NULL,
             nome_pai TEXT,
             nome_mae TEXT,
+            data_nascimento TEXT NOT NULL,
             sexo TEXT NOT NULL CHECK (sexo IN ('M', 'F')),
-            CNS TEXT NOT NULL CHECK (length(CNS) = 15 AND CNS NOT GLOB '*[^0-9]*'),
+            CNS TEXT NOT NULL CHECK (length(CNS) = 5 AND CNS NOT GLOB '*[^0-9]*'),
             caixasId INTEGER NOT NULL,
             FOREIGN KEY(caixasId) REFERENCES caixas(id)
         );
 
         CREATE INDEX IF NOT EXISTS idx_prontuarios_nome_paciente
             ON prontuarios_antigos(nome_paciente COLLATE NOCASE);
+
+        CREATE INDEX IF NOT EXISTS idx_prontuarios_data_nascimento
+            ON prontuarios_antigos(data_nascimento);
 
         CREATE INDEX IF NOT EXISTS idx_prontuarios_cns
             ON prontuarios_antigos(CNS);
@@ -252,14 +275,15 @@ def recriarBancoDeTeste():
         con.executemany(
             """
             INSERT INTO prontuarios_antigos (
-                nome_paciente, nome_pai, nome_mae, sexo, CNS, caixasId
-            ) VALUES (?, ?, ?, ?, ?, ?)
+                nome_paciente, nome_pai, nome_mae, data_nascimento, sexo, CNS, caixasId
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
                     prontuario["nomePaciente"],
                     prontuario["nomePai"],
                     prontuario["nomeMae"],
+                    prontuario["dataNascimento"],
                     prontuario["sexo"],
                     prontuario["cns"],
                     mapeamentoCaixas[(prontuario["caixaCodigo"], prontuario["caixaSexo"])],
